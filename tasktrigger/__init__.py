@@ -165,7 +165,7 @@ def main(mytimer):
     connection_string = os.environ["AzureWebJobsStorage"]
     blob_service_client = BlobServiceClient.from_connection_string(connection_string)
 
-    container_name = "tareasexport"
+    container_name = "copydatatask"
 
     container_client = blob_service_client.get_container_client(container_name)
 
