@@ -5,7 +5,7 @@ import json
 from io import StringIO
 from azure.storage.blob import BlobServiceClient
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import datetime, timedelta 
 
 def main(mytimer):
     # ==============================
@@ -24,6 +24,21 @@ def main(mytimer):
     )
 
     all_results = []
+    # Fecha de corte: solo se exporta el último mes desde el momento de ejecución
+    CUTOFF_DATE = datetime.utcnow() - timedelta(days=30)
+
+    # ==============================
+    # Comprobar si un key (año/mes/dia en la ruta) es reciente
+    # ==============================
+    def is_recent(key):
+        parts = key.split("/")
+        try:
+            idx = parts.index(REGION)
+            year, month, day = parts[idx + 1], parts[idx + 2], parts[idx + 3]
+            file_date = datetime(int(year), int(month), int(day))
+            return file_date >= CUTOFF_DATE
+        except Exception:
+            return False
 
     # ==============================
     # Obtener clientes
@@ -51,7 +66,7 @@ def main(mytimer):
         for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix=client_path):
             for obj in page.get("Contents", []):
                 key = obj["Key"]
-                if key.lower().endswith(".json"):
+                if key.lower().endswith(".json") and is_recent(key):
                     json_keys.append(key)
 
         return json_keys
