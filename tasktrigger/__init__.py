@@ -66,7 +66,8 @@ def main(mytimer):
         for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix=client_path):
             for obj in page.get("Contents", []):
                 key = obj["Key"]
-                if key.lower().endswith(".json") and is_recent(key):
+                filename = key.rsplit("/", 1)[-1]
+                if filename.lower().startswith("i-") and filename.lower().endswith(".json") and is_recent(key):
                     json_keys.append(key)
 
         return json_keys
